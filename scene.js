@@ -91,9 +91,28 @@ function drawCollectable(t_collectable) {
 
 function drawLifeTokens() //draw life tokens
 {
-	for (i=0;i<lives;i++)
+	for (var i=0;i<3;i++)
 	{
-		fill(160,33,61);
-		rect(width-20*(i+1),10,10,20);
+		var pt1L = {x: width-50*(i+0.5), y: 10};
+		var pt2L = {x: width-50*(i+0.3), y: 20};
+		var pt3 = {x: width-50*(i+0.7), y: 20};
+		var pt4 = {x: width-50*(i+0.7), y: 45};
+		var pt1R = {x: width-50*(i+0.9), y: 10};
+		var pt2R = {x: width-50*(i+1.1), y: 20};
+
+		noStroke();
+		//white outline
+		fill(255);
+		quad(pt1L.x,pt1L.y-3,pt2L.x+3,pt2L.y,pt4.x,pt4.y+3,pt3.x,pt3.y-3);
+		quad(pt1R.x,pt1R.y-3,pt2R.x-3,pt2R.y,pt4.x,pt4.y+4,pt3.x,pt3.y-3);
+		if(i+1<=lives){
+			fill(160,33,61); //red fill
+		}
+		else
+		{
+			fill(0); //black fill
+		}
+		quad(pt1L.x,pt1L.y,pt2L.x,pt2L.y,pt4.x,pt4.y,pt3.x,pt3.y);
+		quad(pt1R.x,pt1R.y,pt2R.x,pt2R.y,pt4.x,pt4.y,pt3.x,pt3.y);
 	}
 }

@@ -1,9 +1,9 @@
 /*
 Sound credits:
-    - a#2.wav by angstrom
-    - hargissssound
-    - tarane468
-    - Wobble 19 nomiqbomi
+    - a#2 by angstrom
+    - Spring Birds Loop with Low-Cut (New Jersey) by hargissssound
+    - Malletlayer by tarane468
+    - Wobble 19 by nomiqbomi
 */
 
 var gameChar_x;
@@ -35,15 +35,15 @@ var mountains_y;
 var game_score;
 var flagpole;
 var lives;
+var gameOver;
 
 var jumpSound;
 var collectableSound;
 var deathSound;
 var flagSound;
-var bgSound;
+var birdSound;
 
 var platforms;
-var onPlatform;
 
 function preload()
 {
@@ -53,35 +53,34 @@ function preload()
     collectableSound = loadSound('assets/11072__angstrom__a-2.wav');
     deathSound = loadSound('assets/578827__nomiqbomi__wobble-19.mp3');
     flagSound = loadSound('assets/419242__tarane468__malletlayer.wav');
-    bgSound = loadSound('assets/345852__hargissssound__spring-birds-loop-with-low-cut-new-jersey.wav')
+    birdSound = loadSound('assets/345852__hargissssound__spring-birds-loop-with-low-cut-new-jersey.wav');
     
     jumpSound.setVolume(0.1);
     collectableSound.setVolume(0.1);
-    deathSound.setVolume(0.1);
-    flagSound.setVolume(0.1);
-    bgSound.setVolume(0.1);
+    deathSound.setVolume(0.2);
+    flagSound.setVolume(0.2);
+    birdSound.setVolume(0.1);
 }
+
 function setup()
 {
+	gameOver=false;
 	createCanvas(1024, 576);
-    bgSound.play();
 	floorPos_y = height * 3/4;
 	lives = 3;
 
-    trees = [];
-    initTrees();
-
+	trees = [];
     clouds = [];
-    initClouds();
-
     canyons = [];
-    initCanyons();
-
     collectables = [];
-    initCollectables();
-
     mountains = [];
+
+    initTrees();
+    initClouds();
+    initCanyons();
+    initCollectables();
     initMountains();
+
 	startGame();
 }
 
@@ -140,7 +139,6 @@ function startGame()
 
 	// Variable to control the background scrolling.
 	scrollPos = 0;
-
 	game_score = 0;
 	flagpole = {isReached: false, x_pos: 1700};
 
@@ -153,12 +151,9 @@ function startGame()
 	isRight = false;
 	isFalling = false;
 	isPlummeting = false;
-    onPlatform = false;
-    platforms = []
-    var p1 = createPlatform(400,floorPos_y-100,100);
-    var p2 = createPlatform(600,floorPos_y-200,100);
-    platforms.push(p1);
-    platforms.push(p2);
+    platforms = [];
+    platforms.push(createPlatform(400,floorPos_y-100,100));
+    platforms.push(createPlatform(600,floorPos_y-200,100));
 }
 
 function draw()
@@ -173,7 +168,7 @@ function draw()
 	drawTrees();
 	drawClouds();
 	drawMountains();
-    checkPlayerDie();
+	checkPlayerDie();
     drawFlagpole();
     checkFlagpole();
     drawPlatforms();
@@ -191,23 +186,21 @@ function draw()
 	}
 
 	drawFlagpole();
-	if (!flagpole.isReached) {		
-		checkFlagpole();
-	}
 
 	pop();
 
 	drawLifeTokens();
-	if (checkIsGameOver())
+	drawGameChar();
+	drawGameScore();
+	if(lives==0 || flagpole.isReached) //game won or lost
 	{
+		if(!gameOver)
+		{
+			flagSound.play();
+			gameOver = true;
+		}
 		drawGameOver();
 	}
-
-	// Draw game character.
-	
-	drawGameChar();
-
-	drawGameScore();
 
 	// Logic to make the game character move or the background scroll.
 	if(isLeft)
@@ -235,9 +228,25 @@ function draw()
 	}
 
 	// Logic to make the game character rise and fall.
-	if (gameChar_y!=floorPos_y) {
-		isFalling=true;
-	} else {
+	if (gameChar_y<floorPos_y) 
+	{
+		var isContact = false;
+		for(i in platforms)
+		{
+			if (platforms[i].checkContact(gameChar_world_x,gameChar_y))
+			{
+				isContact = true;
+				break;
+			}
+		}
+		if(!isContact)
+		{
+			gameChar_y+=4;
+			isFalling=true;
+		}
+	}
+	else
+	{
 		isFalling=false;
 	}
 
@@ -255,7 +264,7 @@ function draw()
 // ---------------------
 
 function keyPressed()
-{	
+{
 	if (keyCode==37) //left arrow
 	{
 		isLeft = true;
@@ -266,24 +275,16 @@ function keyPressed()
 	}
 	else if ((keyCode==38 || keyCode==32) && gameChar_y==floorPos_y) //space
 	{
-		jumpSound.play();
-        if(gameChar_y>=floorPos_y || onPlatform)
-        {
-            gameChar_y-=150;
-        }
-		gameChar_y-=100;
+		if(!isFalling)
+		{
+			jumpSound.play();
+			gameChar_y-=100;
+		}
 	}
 
 	else if (keyCode==81) //letter Q to reset all
 	{
-		isPlummeting=false;
-		gameChar_x = width/2;
-		gameChar_world_x = 0;
-		gameChar_y = floorPos_y;
-		scrollPos = 0;
-		game_score = 0;
-		collectables = [];
-		flagpole.isReached = 0;
+		setup();
 	}
 }
 
@@ -300,8 +301,8 @@ function keyReleased()
 // Game character render function
 // ------------------------------
 
-function drawGameChar(){
-    
+function drawGameChar()
+{
     if(isLeft && isFalling)
     {
         drawJumpingLeft();
@@ -341,10 +342,10 @@ function checkCanyon(t_canyon)
 
 function checkFlagpole()
 {
-	var d = abs(gameChar_world_x-flagpole.x_pos) ;
-	if (d<15)
+	if (!gameOver && dist(gameChar_world_x, 0, flagpole.x_pos, 0) < 20)
 	{
 		flagpole.isReached = true;
+		flagSound.play();
 	}
 }
 
@@ -353,16 +354,19 @@ function checkCollectable(t_collectable)
 	if (dist(gameChar_world_x,gameChar_y,t_collectable.x_pos,t_collectable.y_pos) <= t_collectable.size) { //character is touching collectable coin
 		t_collectable.isFound = true;
 		game_score += 1;
+		collectableSound.play();
 	}
 }
 
 function checkPlayerDie()
 {
-	if (gameChar_y > height) //character has fallen below the bottom of the canvas
+	if (lives!=0 && gameChar_y > height) //character has fallen below the bottom of the canvas
 	{
 		lives--;
-		if (lives > 0)
+		deathSound.play();
+		if (lives > 0) //stage restarts automatically
 		{
+			initCollectables();
 			startGame();
 		}
 	}
@@ -370,20 +374,12 @@ function checkPlayerDie()
 
 function drawGameScore()
 {
+	textSize(24);
+	textAlign(LEFT);
+	textStyle(NORMAL);
 	fill(255);
 	noStroke();
-	text('Score: ' + game_score, 20, 20);
-}
-
-function checkIsGameOver()
-{
-	var gameOver = false;
-
-	if (lives<1 || flagpole.isReached)
-	{
-		gameOver = true;
-	}
-	return gameOver;
+	text('Score: ' + game_score, 20, 30);
 }
 
 function createPlatform(x, y, length)
@@ -400,15 +396,10 @@ function createPlatform(x, y, length)
         },
         checkContact: function(gc_x,gc_y)
         {
-            //check x-axis
-            var c1 = gc_x+20>this.x;
-            var c2 = gc_x<this.x+20+this.length;
-
-            if (c1&&c2)
+            if (gc_x>this.x && gc_x<this.x+this.length) //check x-axis
             {
-                //check for y-axis
-                var d = this.y - gc_y;
-                if(d>=0 && d<1)
+                var d = this.y - gc_y; //check y-axis
+                if(d>=0 && d<5) 
                 {
                     return true;
                 }
@@ -436,7 +427,7 @@ function drawGameOver()
 	textAlign(CENTER); //center align text
 	textStyle(BOLD); //make text even more visible by boldening
 	fill(160,33,61);
-	if (lives<1)
+	if (lives==0)
 	{
 		text('Game over. Press space to continue.',width/2,height/2);
 		pop();
@@ -448,27 +439,4 @@ function drawGameOver()
 		pop();
 		return;
 	}
-}
-
-function checkIfCharacterIsUnderAnyPlatforms()
-{
-    //check if character is under a platform
-    if(isFalling)
-    {
-        var isContact = false;
-        onPlatform = false;
-        for(var i=0;i<platforms.length;i++)
-        {
-            isContact = platforms[i].checkContact(gameChar_world_x,gameChar_y);
-            if(isContact)
-            {
-                onPlatform = true;
-                break;
-            }
-        }
-        if(!isContact)
-        {
-            gameChar_y+=5;
-        }
-    }
 }

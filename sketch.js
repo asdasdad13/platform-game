@@ -78,7 +78,6 @@ function setup()
     initTrees();
     initClouds();
     initCanyons();
-    initCollectables();
     initMountains();
 
 	startGame();
@@ -151,9 +150,10 @@ function startGame()
 	isRight = false;
 	isFalling = false;
 	isPlummeting = false;
+    initCollectables();
     platforms = [];
-    platforms.push(createPlatform(400,floorPos_y-100,100));
-    platforms.push(createPlatform(600,floorPos_y-200,100));
+    platforms.push(createPlatform(400,floorPos_y-70,200));
+    platforms.push(createPlatform(500,floorPos_y-200,100));
 }
 
 function draw()
@@ -236,6 +236,7 @@ function draw()
 			if (platforms[i].checkContact(gameChar_world_x,gameChar_y))
 			{
 				isContact = true;
+				isFalling=false;
 				break;
 			}
 		}
@@ -269,12 +270,14 @@ function keyPressed()
 	{
 		isLeft = true;
 	}
-	else if (keyCode==39) //right arrow
+	if (keyCode==39) //right arrow
 	{
 		isRight = true;
 	}
-	else if ((keyCode==38 || keyCode==32) && gameChar_y==floorPos_y) //space
+	if ((keyCode==38 || keyCode==32) && gameChar_y<=floorPos_y) //space, up arrow
 	{
+		console.log(1)
+		console.log(isFalling)
 		if(!isFalling)
 		{
 			jumpSound.play();
@@ -282,7 +285,7 @@ function keyPressed()
 		}
 	}
 
-	else if (keyCode==81) //letter Q to reset all
+	if (keyCode==81) //letter Q to reset all
 	{
 		setup();
 	}
@@ -364,11 +367,7 @@ function checkPlayerDie()
 	{
 		lives--;
 		deathSound.play();
-		if (lives > 0) //stage restarts automatically
-		{
-			initCollectables();
-			startGame();
-		}
+		if (lives > 0) startGame();
 	}
 }
 

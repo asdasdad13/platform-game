@@ -31,11 +31,13 @@ var collectables_y;
 var mountains;
 var mountains_x;
 var mountains_y;
+var stars;
 
 var game_score;
 var flagpole;
 var lives;
 var gameOver;
+var cheatMode;
 
 var jumpSound;
 var collectableSound;
@@ -72,15 +74,29 @@ function setup()
 	trees = [];
     clouds = [];
     canyons = [];
-    collectables = [];
     mountains = [];
+	stars = [];
 
     initTrees();
     initClouds();
     initCanyons();
     initMountains();
+	initStars();
 
 	startGame();
+}
+
+function initStars()
+{
+	for(var i=0;i<30;i++)
+	{
+		stars.push(
+			{
+				x: random(i,i+50),
+				y: random(0,height/2)
+			}
+		)
+	}
 }
 
 function initTrees()
@@ -105,11 +121,12 @@ function initCanyons()
 
 function initCollectables()
 {
+	collectables = [];
     collectables_x = [210, 745, 820, -550, 1100, 1600]; //anchor x coords of collectables
 	collectables_y = [floorPos_y-25, floorPos_y-90, floorPos_y-25, floorPos_y-25, floorPos_y-25, floorPos_y-25];
 	for (i in collectables_x) {
 		collectables.push(
-			collectable = {x_pos: collectables_x[i], y_pos: collectables_y[i], size: 50, line_points_y: [collectables_y[i]-10,collectables_y[i]+10], isFound: false}
+			collectable = {x_pos: collectables_x[i], y_pos: collectables_y[i], size: 30, line_points_y: [collectables_y[i]-10,collectables_y[i]+10], isFound: false}
 		)}
 }
 
@@ -159,15 +176,14 @@ function startGame()
 function draw()
 {
 	noStroke();
-
     drawSky();
     drawGround();
 	push();
-	translate(scrollPos, 0);	
-
-	drawTrees();
+	translate(scrollPos, 0);
 	drawClouds();
 	drawMountains();
+	drawTrees();
+	drawStars();
 	checkPlayerDie();
     drawFlagpole();
     checkFlagpole();
@@ -196,7 +212,7 @@ function draw()
 	{
 		if(!gameOver)
 		{
-			flagSound.play();
+			if(flagpole.isReached) flagSound.play();
 			gameOver = true;
 		}
 		drawGameOver();
@@ -205,19 +221,19 @@ function draw()
 	// Logic to make the game character move or the background scroll.
 	if(isLeft)
 	{
-		if(gameChar_x > width * 0.2)
-		{
-			gameChar_x -= 5;
-		}
-		else
+		if (gameChar_x < width * 0.2 && gameChar_world_x+10>-583) //if char has reached threshold, the scene moves instead
 		{
 			scrollPos += 5;
+		}
+		else if(gameChar_world_x>-783) //if character has NOT reached left threshold, char updates
+		{
+			gameChar_x -= 5;
 		}
 	}
 
 	if(isRight)
 	{
-		if(gameChar_x < width * 0.8)
+		if(gameChar_x < width * 0.8 && gameChar_world_x<1800)
 		{
 			gameChar_x  += 5;
 		}
@@ -252,7 +268,7 @@ function draw()
 	}
 
 	//make character plummet in canyons
-	if (isPlummeting) {
+	if (isPlummeting && !cheatMode) {
 		gameChar_y += 10;
 	}
 	// Update real position of gameChar for collision detection.
@@ -276,18 +292,20 @@ function keyPressed()
 	}
 	if ((keyCode==38 || keyCode==32) && gameChar_y<=floorPos_y) //space, up arrow
 	{
-		console.log(1)
-		console.log(isFalling)
 		if(!isFalling)
 		{
 			jumpSound.play();
 			gameChar_y-=100;
 		}
 	}
-
 	if (keyCode==81) //letter Q to reset all
 	{
 		setup();
+	}
+	if(keyCode==71) //letter g to activate cheat mode
+	{
+		console.log('Cheat mode activated')
+		cheatMode = !cheatMode;
 	}
 }
 
@@ -354,9 +372,13 @@ function checkFlagpole()
 
 function checkCollectable(t_collectable)
 {
-	if (dist(gameChar_world_x,gameChar_y,t_collectable.x_pos,t_collectable.y_pos) <= t_collectable.size) { //character is touching collectable coin
+	var c1 = t_collectable.x_pos+t_collectable.size>=gameChar_world_x+5 && t_collectable.x_pos-t_collectable.size/2<=gameChar_world_x+5
+	var c2 = t_collectable.y_pos+t_collectable.size/2>=gameChar_y-70 && t_collectable.y_pos-t_collectable.size/2<=gameChar_y
+
+	if(c1 && c2)
+	{
 		t_collectable.isFound = true;
-		game_score += 1;
+		game_score++;
 		collectableSound.play();
 	}
 }
@@ -390,7 +412,7 @@ function createPlatform(x, y, length)
         length:length,
         draw: function()
         {
-            fill(255,0,255);
+            fill(27,106,170);
             rect(this.x,this.y,this.length,20);
         },
         checkContact: function(gc_x,gc_y)

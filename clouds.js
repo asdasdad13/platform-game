@@ -9,6 +9,7 @@ function drawClouds() {
 
 function initClouds()
 {
+	
     clouds_x = [150, 450, 800, 1000, -700, 1500,-300]; //anchor x coords of clouds
 	clouds_y = [95, 140, 85, 90, 90, 120, 140]; //anchor y coords of clouds
 	for (i in clouds_x) {

@@ -76,16 +76,16 @@ function drawJumpingFacingForwards()
 {
 	//head
 	fill(164,140,114);
-	ellipse(gameChar_x,gameChar_y-60-10,20);
+	ellipse(gameChar_x,gameChar_y-60,20);
 	//legs
-	stroke(29,29,29);
+    stroke(29,29,29);
 	strokeWeight(5);
-	line(gameChar_x-6,gameChar_y-20-10,gameChar_x-6,gameChar_y-12);//left
-	line(gameChar_x+5,gameChar_y-20-10,gameChar_x+5,gameChar_y-12);//right	
+	line(gameChar_x-6,gameChar_y-20,gameChar_x-6,gameChar_y); //left
+	line(gameChar_x+5,gameChar_y-20,gameChar_x+5,gameChar_y); //right
 	//body
 	noStroke();
 	fill(71,100,155);
-	rect(gameChar_x-8,gameChar_y-50-10,16,30);
+	rect(gameChar_x-8,gameChar_y-50,16,30);
 }
 function drawStandingFrontFacing()
 {

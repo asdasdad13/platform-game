@@ -36,17 +36,6 @@ function drawCanyon(t_canyon)
 	rect(t_canyon.x_pos+t_canyon.width*.1,floorPos_y,t_canyon.width,floorPos_y);
 }
 
-function drawTrees()
-{
-    trees_x = [-200,-500,-340,-100,50,240,400,640,810,940,1030,1200,1500,1760]; //anchor for x-coord of trees
-	trunk = 
-	{		
-		width: 20,
-		height: 45
-	};
-	trees_y = floorPos_y-trunk.height;
-}
-
 function drawGround()
 {
     noStroke();
@@ -56,7 +45,23 @@ function drawGround()
 
 function drawSky()
 {
-    background(94,125,151);
+	if(cheatMode){  //changes to night sky
+		background(42,42,76);
+	}
+	else background(94,125,151); //default day
+}
+
+function drawStars()
+{
+	fill(255);
+	if(cheatMode)
+	{
+		for(i in stars)
+		{
+		var star = stars[i];
+		ellipse(star.x_pos,star.y_pos,5)
+		}
+	}
 }
 
 function drawFlagpole() {
@@ -69,6 +74,10 @@ function drawFlagpole() {
 
 	if (flagpole.isReached) {
 		rect(flagpole.x_pos, floorPos_y-250,50,50);
+		fill(164,140,114);
+		ellipse(flagpole.x_pos+25,floorPos_y-230,25);
+		fill(71,100,155);
+		rect(flagpole.x_pos+15,floorPos_y-217,20,15);
 	}
 	else {
 		rect (flagpole.x_pos, floorPos_y-50,50,50);

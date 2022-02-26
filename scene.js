@@ -45,10 +45,8 @@ function drawGround()
 
 function drawSky()
 {
-	if(cheatMode){  //changes to night sky
-		background(42,42,76);
-	}
-	else background(94,125,151); //default day
+	if(cheatMode) background(42,42,76);  //changes to night sky
+	else background(94,125,151); 		 //default day
 }
 
 function drawStars()
@@ -58,8 +56,8 @@ function drawStars()
 	{
 		for(i in stars)
 		{
-		var star = stars[i];
-		ellipse(star.x_pos,star.y_pos,5)
+			var star = stars[i];
+			ellipse(star.x_pos,star.y_pos,2)
 		}
 	}
 }

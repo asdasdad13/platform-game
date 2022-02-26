@@ -77,12 +77,11 @@ function setup()
     mountains = [];
 	stars = [];
 
+	initStars();
     initTrees();
     initClouds();
     initCanyons();
     initMountains();
-	initStars();
-
 	startGame();
 }
 
@@ -92,8 +91,8 @@ function initStars()
 	{
 		stars.push(
 			{
-				x: random(i,i+50),
-				y: random(0,height/2)
+				x_pos: random(i,width),
+				y_pos: random(0,height/3)
 			}
 		)
 	}
@@ -177,13 +176,13 @@ function draw()
 {
 	noStroke();
     drawSky();
+	drawStars();
     drawGround();
 	push();
 	translate(scrollPos, 0);
 	drawClouds();
 	drawMountains();
 	drawTrees();
-	drawStars();
 	checkPlayerDie();
     drawFlagpole();
     checkFlagpole();
@@ -217,7 +216,6 @@ function draw()
 		}
 		drawGameOver();
 	}
-
 	// Logic to make the game character move or the background scroll.
 	if(isLeft)
 	{
@@ -230,16 +228,15 @@ function draw()
 			gameChar_x -= 5;
 		}
 	}
-
 	if(isRight)
 	{
-		if(gameChar_x < width * 0.8 && gameChar_world_x<1800)
+		if(gameChar_x > width * 0.8 && gameChar_world_x-10<1800)
 		{
-			gameChar_x  += 5;
+			scrollPos -= 5
 		}
-		else
+		else if(gameChar_world_x<2000)
 		{
-			scrollPos -= 5; // negative for moving against the background
+			gameChar_x  += 5;; // negative for moving against the background
 		}
 	}
 

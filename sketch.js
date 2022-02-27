@@ -4,6 +4,13 @@ Sound credits:
     - Spring Birds Loop with Low-Cut (New Jersey) by hargissssound
     - Malletlayer by tarane468
     - Wobble 19 by nomiqbomi
+
+Extensions:
+	- added some vanity effects such as game over screen fading to black
+Bits I found difficult:
+ - I spent a lot of time re-writing the logic for changes to the value of scrollPos in order to make the side-scrolling pause whenever the character reaches the edge of the level area. I tried adding more conditions, but the final solution was simply to switch the case conditions.
+
+ For example, the initial conditions only checked if the character was on the left or right side of the screen, and attempting to add on conditions to check if character had reached certain part of map made character stop moving at the wrong threshold.
 */
 
 var gameChar_x;
@@ -38,6 +45,8 @@ var flagpole;
 var lives;
 var gameOver;
 var cheatMode;
+var fadeInBlackAlpha;
+var fadeInRedAlpha;
 
 var jumpSound;
 var collectableSound;
@@ -66,22 +75,8 @@ function preload()
 
 function setup()
 {
-	gameOver=false;
 	createCanvas(1024, 576);
-	floorPos_y = height * 3/4;
 	lives = 3;
-
-	trees = [];
-    clouds = [];
-    canyons = [];
-    mountains = [];
-	stars = [];
-
-	initStars();
-    initTrees();
-    initClouds();
-    initCanyons();
-    initMountains();
 	startGame();
 }
 
@@ -148,6 +143,24 @@ function initMountains()
 
 function startGame()
 {
+	// birdSound.play();
+	gameOver=false;
+	floorPos_y = height * 3/4;
+	fadeInBlackAlpha=0;
+	fadeInRedAlpha=20;
+
+	trees = [];
+    clouds = [];
+    canyons = [];
+    mountains = [];
+	stars = [];
+
+	initStars();
+    initTrees();
+    initClouds();
+    initCanyons();
+    initMountains();
+
 	//init the game
 	gameChar_x = width/2;
 	gameChar_y = floorPos_y;
@@ -176,15 +189,22 @@ function draw()
 {
 	noStroke();
     drawSky();
-	drawStars();
     drawGround();
+
 	push();
-	translate(scrollPos, 0);
+	translate(scrollPos*0.01,0);
+	drawStars();
+	pop();
+	push();
+	translate(scrollPos*0.04,0);
 	drawClouds();
 	drawMountains();
+	pop();
+
+	push();
+	translate(scrollPos, 0);
 	drawTrees();
 	checkPlayerDie();
-    drawFlagpole();
     checkFlagpole();
     drawPlatforms();
 
@@ -207,6 +227,10 @@ function draw()
 	drawLifeTokens();
 	drawGameChar();
 	drawGameScore();
+
+	textSize(16);
+	if (cheatMode) text('Cheat mode on',width-120,height-10);
+
 	if(lives==0 || flagpole.isReached) //game won or lost
 	{
 		if(!gameOver)
@@ -216,6 +240,7 @@ function draw()
 		}
 		drawGameOver();
 	}
+
 	// Logic to make the game character move or the background scroll.
 	if(isLeft)
 	{
@@ -279,31 +304,39 @@ function draw()
 
 function keyPressed()
 {
-	if (keyCode==37) //left arrow
+	if(!gameOver)
 	{
-		isLeft = true;
-	}
-	if (keyCode==39) //right arrow
-	{
-		isRight = true;
-	}
-	if ((keyCode==38 || keyCode==32) && gameChar_y<=floorPos_y) //space, up arrow
-	{
-		if(!isFalling)
+		if (keyCode==37) //left arrow
 		{
-			jumpSound.play();
-			gameChar_y-=100;
+			isLeft = true;
+		}
+		if (keyCode==39) //right arrow
+		{
+			isRight = true;
+		}
+		if (keyCode==38 || keyCode==32) //space, up arrow
+		{
+			if(!isFalling && gameChar_y<=floorPos_y)
+			{
+				jumpSound.play();
+				gameChar_y-=100;
+			}
+		}
+		if (keyCode==81) //letter Q to reset all
+		{
+			setup();
+		}
+		if(keyCode==71) //letter G to activate cheat mode
+		{
+			cheatMode = !cheatMode;
+			if(!cheatMode)isPlummeting=false; //initialise isPlummeting after switching back to normal
 		}
 	}
-	if (keyCode==81) //letter Q to reset all
+	else //game is over, player shouldn't move anymore
 	{
-		setup();
+		if (keyCode==32) setup(); //space to continue
 	}
-	if(keyCode==71) //letter g to activate cheat mode
-	{
-		console.log('Cheat mode activated')
-		cheatMode = !cheatMode;
-	}
+	
 }
 
 function keyReleased()
@@ -441,19 +474,30 @@ function drawGameOver()
 {
 	push();
 	stroke(255);
-	textSize(36);
+	textSize(72);
 	textAlign(CENTER); //center align text
 	textStyle(BOLD); //make text even more visible by boldening
 	fill(160,33,61);
+	if(fadeInBlackAlpha<80) fadeInBlackAlpha++;
+	if(fadeInRedAlpha<255) fadeInRedAlpha++;
+	noStroke();
+	fill(0,0,0,fadeInBlackAlpha);
+	rect(0,0,width,height);
+
+	fill(255,0,0,fadeInRedAlpha);
 	if (lives==0)
 	{
-		text('Game over. Press space to continue.',width/2,height/2);
+		text('Game over.',width/2,height/2);
+		textSize(24);
+		text('Press Space to restart level.',width/2,height/2+60);
 		pop();
 		return;
 	}
 	if (flagpole.isReached==true)
 	{
-		text("Level complete. Press space to continue.",width/2,height/2);
+		text("Level complete!",width/2,height/2);
+		textSize(24);
+		text('Press space to continue.',width/2,height/2+60);
 		pop();
 		return;
 	}

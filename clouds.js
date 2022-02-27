@@ -1,24 +1,39 @@
-function drawClouds() {
+function drawClouds()
+{
 	fill(236,236,236);
-	for (i=0;i<clouds.length;i++) {
-		for (j=0;j<clouds[i].length;j++) {
-			ellipse(clouds[i][j].pos_x,clouds[i][j].pos_y,clouds[i][j].r1,clouds[i][j].r2);
-		}
+	for (i in clouds) {
+		var cl = clouds[i].left;
+		var cm = clouds[i].mid;
+		var cr = clouds[i].right;
+		ellipse(cl.pos_x,cl.pos_y,cl.r1,cl.r2);
+		ellipse(cm.pos_x,cm.pos_y,cm.r1,cm.r2);
+		ellipse(cr.pos_x,cr.pos_y,cr.r1,cr.r2);
 	}
 }
 
 function initClouds()
 {
-	
-    clouds_x = [150, 450, 800, 1000, -700, 1500,-300]; //anchor x coords of clouds
-	clouds_y = [95, 140, 85, 90, 90, 120, 140]; //anchor y coords of clouds
-	for (i in clouds_x) {
+	for (i=0;i<10;i++)
+	{
+		var x = random(0,width-10);
+		var y = random(0,height/3);
 		clouds.push(
-			[
-				left = {pos_x: clouds_x[i], pos_y: clouds_y[i], r1: 100, r2: 70}, 
-				mid = {pos_x: clouds_x[i]+50, pos_y: clouds_y[i]+10 ,r1: 80, r2: 50},
-				right = {pos_x: clouds_x[i]-50, pos_y: clouds_y[i]+10, r1: 60, r2: 50}
-			]
+			{
+				speed: random(0.5,1.5),
+				left: {pos_x: x, pos_y: y, r1: 100, r2: 70}, 
+				mid: {pos_x: x+50, pos_y: y+10 ,r1: 80, r2: 50},
+				right: {pos_x: x-50, pos_y: y+10, r1: 60, r2: 50}
+				//make the cloud shape more randomised
+			}
 		)
+	}
+}
+
+function animateClouds()
+{
+	for (i in clouds)
+	{
+		var c = clouds[i];
+		
 	}
 }

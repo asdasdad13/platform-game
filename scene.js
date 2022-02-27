@@ -13,6 +13,7 @@ function drawMountains() {
 		}
 	}
 }
+
 // Function to draw trees objects.
 function drawTrees() {
 	//trunk

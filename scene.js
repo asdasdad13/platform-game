@@ -1,30 +1,35 @@
 // Function to draw mountains objects.
 function drawMountains() {
-	for (i=0;i<mountains.length;i++) {
-		for (j=0;j<mountains[0].length;j++) {
-			if (j==0) {
-				fill(56,56,56);	
-			} else if (j==1) {
-				fill(43,40,35);
-			} else {
-				fill(190,197,201);
-			}
-			triangle(mountains[i][j].pos_x1,mountains[i][j].pos_y1,mountains[i][j].pos_x2,mountains[i][j].pos_y2,mountains[i][j].pos_x3,mountains[i][j].pos_y3);
-		}
+	for (i in mountains)
+	{
+		var m = mountains[i];
+
+		if(!cheatMode) fill(56,56,56); //daytime colours
+		else fill(49,44,66);			//nighttime colours
+		triangle(m.bigMount.pos_x1,m.bigMount.pos_y1,m.bigMount.pos_x2,m.bigMount.pos_y2,m.bigMount.pos_x3,m.bigMount.pos_y3);
+		if(!cheatMode) fill(43,40,35); //daytime colours
+		else fill(44,37,57);
+		triangle(m.smallMount.pos_x1,m.smallMount.pos_y1,m.smallMount.pos_x2,m.smallMount.pos_y2,m.smallMount.pos_x3,m.smallMount.pos_y3);
+		if(!cheatMode) fill(190,197,201);
+		else fill(104,102,126);
+		triangle(m.snowPeak.pos_x1,m.snowPeak.pos_y1,m.snowPeak.pos_x2,m.snowPeak.pos_y2,m.snowPeak.pos_x3,m.snowPeak.pos_y3);
 	}
 }
 
 // Function to draw trees objects.
 function drawTrees() {
 	//trunk
-	for (var i=0;i<trees_x.length;i++) {
-		fill(95,74,47);
-		rect(trees_x[i],trees_y,trunk.width,trunk.height);
+	for (i in trees) {
+		var t = trees[i];
+
+		if(!cheatMode) fill(95,74,47); //daytime colours
+		else fill(65,51,62);
+		rect(t.x,t.y,t.trunk.w,t.trunk.h);
 		//leaves
-		fill(54,86,62);
-		triangle(trees_x[i]-trunk.width,trees_y,trees_x[i]+trunk.width*2,trees_y,trees_x[i]+0.5*trunk.width,trees_y-trunk.height);
-		triangle(trees_x[i]-trunk.width*0.7,trees_y-trunk.height*0.7,trees_x[i]+trunk.width*1.7,trees_y-+trunk.height*0.7,trees_x[i]+0.5*trunk.width,trees_y-trunk.height*1.5);
-		noStroke();
+		if(!cheatMode) fill(54,86,62); //nighttime colurs
+		else fill(48,56,69);
+		triangle(t.x-t.trunk.w,t.y,t.x+t.trunk.w*2,t.y,t.x+0.5*t.trunk.w,t.y-t.trunk.h);
+		triangle(t.x-t.trunk.w*0.7,t.y-t.trunk.h*0.7,t.x+t.trunk.w*1.7,t.y-+t.trunk.h*0.7,t.x+0.5*t.trunk.w,t.y-t.trunk.h*1.5);
 	}
 }
 
@@ -39,27 +44,36 @@ function drawCanyon(t_canyon)
 
 function drawGround()
 {
-    noStroke();
-    fill(54,86,62);
+	if(!cheatMode) fill(54,86,62);
+	else fill(48,56,69);
 	rect(0, floorPos_y, width, height/4);
 }
 
 function drawSky()
 {
-	if(cheatMode) background(42,42,76);  //changes to night sky
+	if(cheatMode) background(43,38,74);  //changes to night sky
 	else background(94,125,151); 		 //default day
 }
 
-function drawStars()
+function drawStars() //only visible at night/cheat mode
 {
 	fill(255);
 	if(cheatMode)
 	{
 		for(i in stars)
 		{
-			var star = stars[i];
-			ellipse(star.x_pos,star.y_pos,2)
+			var s = stars[i];
+			ellipse(s.x_pos,s.y_pos,2)
 		}
+	}
+}
+
+function drawMoon() //only visible at night/cheat mode
+{
+	if(cheatMode)
+	{
+		fill(200,200,200);
+		ellipse(width*0.7,height*0.1,90);
 	}
 }
 

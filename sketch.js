@@ -9,9 +9,15 @@ Extensions:
 	- added some vanity effects such as game over screen fading to black
 Bits I found difficult:
  - I spent a lot of time re-writing the logic for changes to the value of scrollPos in order to make the side-scrolling pause whenever the character reaches the edge of the level area. I tried adding more conditions, but the final solution was simply to switch the case conditions.
-
+ - can't play birdSound no matter how short i cut it
  For example, the initial conditions only checked if the character was on the left or right side of the screen, and attempting to add on conditions to check if character had reached certain part of map made character stop moving at the wrong threshold.
-*/
+
+			fill(44,35,73,150);
+			use csp colour picker, then manually add if-else cases for nighttime colours.
+
+
+
+ */
 
 var gameChar_x;
 var gameChar_y;
@@ -26,18 +32,10 @@ var isPlummeting;
 
 var trees;
 var clouds;
-var trees_x;
-var trees_y;
-var clouds_x;
-var clouds_y;
 var canyons;
-var canyons_x;
 var collectables;
-var collectables_x;
-var collectables_y;
 var mountains;
-var mountains_x;
-var mountains_y;
+var floorPos_y;
 var stars;
 
 var game_score;
@@ -48,10 +46,10 @@ var cheatMode;
 var fadeInBlackAlpha;
 var fadeInRedAlpha;
 
-var jumpSound;
-var collectableSound;
-var deathSound;
-var flagSound;
+// var jumpSound;
+// var collectableSound;
+// var deathSound;
+// var flagSound;
 var birdSound;
 
 var platforms;
@@ -70,7 +68,7 @@ function preload()
     collectableSound.setVolume(0.1);
     deathSound.setVolume(0.2);
     flagSound.setVolume(0.2);
-    birdSound.setVolume(0.1);
+    birdSound.setVolume(1);
 }
 
 function setup()
@@ -95,18 +93,28 @@ function initStars()
 
 function initTrees()
 {
-    trees_x = [-200,-500,-340,-100,50,240,400,640,810,940,1030,1200,1500,1760]; //anchor for x-coord of trees
-	trunk = 
+    var trees_x = [-200,-500,-340,-100,50,240,400,640,810,940,1030,1200,1500,1760]; //anchor for x-coord of trees
+	var trunk = 
 	{		
-		width: 20,
-		height: 45
+		w: 20, //width
+		h: 45 //height
 	};
-	trees_y = floorPos_y-trunk.height;
+	var trees_y = floorPos_y-trunk.h;
+
+	for (i in trees_x)
+	{
+		trees.push
+		(
+			{
+				x: trees_x[i], y: trees_y, trunk: trunk
+			}
+		);
+	}
 }
 
 function initCanyons()
 {
-    canyons_x = [300, 700, 850, -330, -450, -100, 1500]; //anchor x coords of canyons
+    var canyons_x = [300, 700, 850, -330, -450, -100, 1500]; //anchor x coords of canyons
 	for (i in canyons_x) {
 		canyons.push({x_pos: canyons_x[i],width: 70})
 	}
@@ -116,38 +124,41 @@ function initCanyons()
 function initCollectables()
 {
 	collectables = [];
-    collectables_x = [210, 745, 820, -550, 1100, 1600]; //anchor x coords of collectables
-	collectables_y = [floorPos_y-25, floorPos_y-90, floorPos_y-25, floorPos_y-25, floorPos_y-25, floorPos_y-25];
-	for (i in collectables_x) {
+    var collectables_x = [210, 745, 820, -550, 1100, 1600]; //anchor x coords of collectables
+	var collectables_y = [floorPos_y-25, floorPos_y-90, floorPos_y-25, floorPos_y-25, floorPos_y-25, floorPos_y-25];
+	for (i in collectables_x)
+	{
 		collectables.push(
 			collectable = {x_pos: collectables_x[i], y_pos: collectables_y[i], size: 30, line_points_y: [collectables_y[i]-10,collectables_y[i]+10], isFound: false}
-		)}
+		)
+	}
 }
 
 function initMountains()
 {
-    mountains_x = [140, 680, 1200,-900]; //anchor x coords of mountains
-	mountains_y = floorPos_y; //anchor y coords of mountains, same for all
+    var mountains_x = [140, 680, 1200,-900]; //anchor x coords of mountains
 
-	for (i in mountains_x) {
+	for (i in mountains_x)
+	{
+		var x = mountains_x[i];
 		var mountains_size = 250;
-		mountains.push(
-			[
-				bigMount = {pos_x1: mountains_x[i], pos_y1: mountains_y, pos_x2: mountains_x[i]+285, pos_y2: mountains_y,pos_x3: (mountains_x[i]*2+285)/2, pos_y3: mountains_y-mountains_size*1.55},
-				smallMount = {pos_x1: mountains_x[i]+140, pos_y1: mountains_y, pos_x2: mountains_x[i]+350, pos_y2: mountains_y,pos_x3: (mountains_x[i]*2+140+350)/2, pos_y3: mountains_y-mountains_size},
-				snowPeak = {pos_x1:  mountains_x[i]+92, pos_y1: mountains_y-mountains_size, pos_x2: mountains_x[i]+92+101, pos_y2: mountains_y-mountains_size,pos_x3: ((mountains_x[i]+92)*2+101)/2, pos_y3: mountains_y-mountains_size*1.55}
-			]
-		)
+		mountains.push
+		(
+			{
+				bigMount: {pos_x1: x, pos_y1: floorPos_y, pos_x2: x+285, pos_y2: floorPos_y,pos_x3: (x*2+285)/2, pos_y3: floorPos_y-mountains_size*1.55},
+				smallMount: {pos_x1: x+140, pos_y1: floorPos_y, pos_x2: x+350, pos_y2: floorPos_y,pos_x3: (x*2+140+350)/2, pos_y3: floorPos_y-mountains_size},
+				snowPeak: {pos_x1:  x+92, pos_y1: floorPos_y-mountains_size, pos_x2: x+92+101, pos_y2: floorPos_y-mountains_size,pos_x3: ((x+92)*2+101)/2, pos_y3: floorPos_y-mountains_size*1.55}
+			}
+		);
 	}
 }
 
 function startGame()
 {
-	// birdSound.play();
-	gameOver=false;
+	gameOver = false;
 	floorPos_y = height * 3/4;
-	fadeInBlackAlpha=0;
-	fadeInRedAlpha=20;
+	fadeInBlackAlpha = 0;
+	fadeInRedAlpha = 20;
 
 	trees = [];
     clouds = [];
@@ -162,7 +173,7 @@ function startGame()
     initMountains();
 
 	//init the game
-	gameChar_x = width/2;
+	gameChar_x = 120;
 	gameChar_y = floorPos_y;
 
 	// Variable to control the background scrolling.
@@ -181,29 +192,39 @@ function startGame()
 	isPlummeting = false;
     initCollectables();
     platforms = [];
-    platforms.push(createPlatform(400,floorPos_y-70,200));
+    platforms.push(createPlatform(400,floorPos_y-80,200));
     platforms.push(createPlatform(500,floorPos_y-200,100));
+    platforms.push(createPlatform(650,floorPos_y-180,100));
+    platforms.push(createPlatform(650,floorPos_y-120,100));
 }
 
 function draw()
 {
+	// if (!birdSound.isPlaying())
+	// {
+	// 	console.log('Looping track...')
+	// 	birdSound.play(); //makes sure the track loops
+	// }
 	noStroke();
     drawSky();
     drawGround();
-
+	
 	push();
 	translate(scrollPos*0.01,0);
 	drawStars();
+	drawMoon();
 	pop();
+
 	push();
 	translate(scrollPos*0.04,0);
 	drawClouds();
+	animateClouds();
 	drawMountains();
+	drawTrees();
 	pop();
 
 	push();
 	translate(scrollPos, 0);
-	drawTrees();
 	checkPlayerDie();
     checkFlagpole();
     drawPlatforms();
@@ -240,26 +261,26 @@ function draw()
 		}
 		drawGameOver();
 	}
-
+	
 	// Logic to make the game character move or the background scroll.
 	if(isLeft)
 	{
-		if (gameChar_x < width * 0.2 && gameChar_world_x+10>-583) //if char has reached threshold, the scene moves instead
+		if (gameChar_x < width * 0.3 && gameChar_world_x+10>317) //if char has reached threshold, the scene moves instead
 		{
 			scrollPos += 5;
 		}
-		else if(gameChar_world_x>-783) //if character has NOT reached left threshold, char updates
+		else if(gameChar_world_x>17) //if character has NOT reached left threshold, char updates
 		{
 			gameChar_x -= 5;
 		}
 	}
 	if(isRight)
 	{
-		if(gameChar_x > width * 0.8 && gameChar_world_x-10<1800)
+		if(gameChar_x > width * 0.7 && gameChar_world_x-10<1800)
 		{
 			scrollPos -= 5
 		}
-		else if(gameChar_world_x<2000)
+		else if(gameChar_world_x<2100)
 		{
 			gameChar_x  += 5;; // negative for moving against the background
 		}
@@ -450,7 +471,7 @@ function createPlatform(x, y, length)
             if (gc_x>this.x && gc_x<this.x+this.length) //check x-axis
             {
                 var d = this.y - gc_y; //check y-axis
-                if(d>=0 && d<5) 
+                if(d>=0 && d<4) 
                 {
                     return true;
                 }

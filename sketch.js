@@ -178,7 +178,12 @@ function draw()
 	
 	//on-screen tutorial instructions, IN ORDER//
 
-	for(i in textboxes) textboxes[i].checkBoxInView();
+	for(i in textboxes)//if box position is within current view, render, if not, fade invisible
+        
+	{
+		var b = textboxes[i];
+		b.render()
+	}
 
 	pop();
 

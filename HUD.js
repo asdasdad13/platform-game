@@ -98,7 +98,6 @@ class fadingTextBox
 
         this.fadeOut = function()
         {
-            this.visible = false;
             if(this.boxAlpha!=0)
             {
                 this.boxAlpha--;
@@ -108,7 +107,8 @@ class fadingTextBox
 
         this.render = function()
         {
-            if(this.boxAlpha!=100)
+			if(this.boxPos.x+scrollPos*0.04<this.boxPos.x) this.fadeOut();
+            else if(this.boxAlpha!=100)
             {
                 this.boxAlpha++;
                 this.textAlpha+=5;
@@ -119,13 +119,6 @@ class fadingTextBox
             fill(255,255,255,this.textAlpha);
             textSize(16);
             text(this.textStr, this.textPos.x,this.textPos.y);
-        }
-        
-        this.checkBoxInView = function() //if box position is within current view, render, if not, fade invisible
-        {
-            if(this.boxPos.x+scrollPos*0.04>=this.boxPos.x) this.visible = true;
-            this.render();
-            if(!this.visible) this.fadeOut();
         }
     }
 }

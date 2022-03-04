@@ -6,7 +6,7 @@ Sound credits:
     - Wobble 19 by nomiqbomi
 
 Extensions:
-	- added some vanity effects such as game over screen fading to black
+	- added some vanity effects such as game over screen fading to black, and coded a textbox that would fade in and out using object-oriented programming.
 Bits I found difficult:
  - I spent a lot of time re-writing the logic for changes to the value of scrollPos in order to make the side-scrolling pause whenever the character reaches the edge of the level area. I tried adding more conditions, but the final solution was simply to switch the case conditions.
 	-- For example, the initial conditions only checked if the character was on the left or right side of the screen, and attempting to add on conditions to check if character had reached certain part of map made character unable to virtually move past a certain x-coordinate.
@@ -44,6 +44,7 @@ var gameOver;
 var cheatMode;
 var fadeInBlackAlpha;
 var fadeInRedAlpha;
+var textboxes;
 
 var jumpSound;
 var collectableSound;
@@ -89,6 +90,9 @@ function startGame()
     canyons = [];
     mountains = [];
 	stars = [];
+	collectables = [];
+    platforms = [];
+	textboxes = [];
 
 	initStars();
     initTrees();
@@ -96,6 +100,16 @@ function startGame()
     initCanyons();
     initMountains();
 	initBonfire();
+    initCollectables();
+	initPlatforms();
+
+	d = new directionalSign;
+	walkInstructionsBox = new fadingTextBox('walk', 80,floorPos_y-190,220,60);
+	collectInstructionsBox = new fadingTextBox('collect',360,floorPos_y-130,300,60);
+	jumpInstructionsBox = new fadingTextBox('jump', 600,floorPos_y-290,220,60);
+	testBox = new fadingTextBox('jump', width+200,floorPos_y-290,220,60);
+	textboxes.push(walkInstructionsBox,collectInstructionsBox,jumpInstructionsBox,testBox)
+
 
 	//init the game
 	gameChar_x = 120;
@@ -115,12 +129,6 @@ function startGame()
 	isRight = false;
 	isFalling = false;
 	isPlummeting = false;
-    initCollectables();
-    platforms = [];
-    platforms.push(createPlatform(400,floorPos_y-80,200));
-    platforms.push(createPlatform(500,floorPos_y-200,100));
-    platforms.push(createPlatform(650,floorPos_y-180,100));
-    platforms.push(createPlatform(650,floorPos_y-120,100));
 }
 
 function draw()
@@ -143,7 +151,6 @@ function draw()
 	push();
 	translate(scrollPos*0.04,0);
 	drawClouds();
-	animateClouds();
 	drawMountains();
 	drawTrees();
 	pop();
@@ -166,14 +173,19 @@ function draw()
 		}
 	}
 
-	drawDirectionalSign();
+	d.animateSign();
 	drawFlagpole();
+	
+	//on-screen tutorial instructions, IN ORDER//
+
+	for(i in textboxes) textboxes[i].checkBoxInView();
 
 	pop();
 
 	drawLifeTokens();
 	drawGameChar();
 	drawGameScore();
+
 
 	textSize(16);
 	if (cheatMode) text('Cheat mode on',width-120,height-10);
@@ -194,10 +206,12 @@ function draw()
 		if (gameChar_x < width * 0.3 && gameChar_world_x+10>317) //if char has reached threshold, the scene moves instead
 		{
 			scrollPos += 5;
+			if(cheatMode) scrollPos += 5; //move in 2x speed for cheat mode
 		}
 		else if(gameChar_world_x>17) //if character has NOT reached left threshold, char updates
 		{
 			gameChar_x -= 5;
+			if(cheatMode) gameChar_x -= 5;
 		}
 	}
 	if(isRight)
@@ -205,10 +219,12 @@ function draw()
 		if(gameChar_x > width * 0.7 && gameChar_world_x-10<1800)
 		{
 			scrollPos -= 5
+			if(cheatMode) scrollPos -= 5;
 		}
 		else if(gameChar_world_x<2100)
 		{
-			gameChar_x  += 5;; // negative for moving against the background
+			gameChar_x += 5;
+			if(cheatMode) gameChar_x += 5;
 		}
 	}
 
@@ -243,6 +259,7 @@ function draw()
 	// Update real position of gameChar for collision detection.
 	gameChar_world_x = gameChar_x - scrollPos;
 	checkPlayerDie();
+
 }
 
 // ---------------------
@@ -273,7 +290,7 @@ function keyPressed()
 		{
 			setup();
 		}
-		if(keyCode==71) //letter G to activate cheat mode
+		if(keyCode==69) //letter E to activate cheat mode
 		{
 			cheatMode = !cheatMode;
 			if(!cheatMode)isPlummeting=false; //initialise isPlummeting after switching back to normal
@@ -327,88 +344,6 @@ function drawGameChar()
     }
 }
 
-
-
-function initStars()
-{
-	for(var i=0;i<30;i++)
-	{
-		stars.push(
-			{
-				x_pos: random(i,width),
-				y_pos: random(0,height/3)
-			}
-		)
-	}
-}
-
-function initTrees()
-{
-    var trees_x = [-200,-500,-340,-100,50,240,400,640,810,940,1030,1200,1500,1760]; //anchor for x-coord of trees
-	var trunk = 
-	{		
-		w: 20, //width
-		h: 45 //height
-	};
-	var trees_y = floorPos_y-trunk.h;
-
-	for (i in trees_x)
-	{
-		trees.push
-		(
-			{
-				x: trees_x[i], y: trees_y, trunk: trunk
-			}
-		);
-	}
-}
-
-function initCanyons()
-{
-    var canyons_x = [300, 700, 850, -330, -450, -100, 1500]; //anchor x coords of canyons
-	for (i in canyons_x) {
-		canyons.push({x_pos: canyons_x[i],width: 70})
-	}
-}
-
-
-function initCollectables()
-{
-	collectables = [];
-    var collectables_x = [210, 745, 820, -550, 1100, 1600]; //anchor x coords of collectables
-	var collectables_y = [floorPos_y-25, floorPos_y-90, floorPos_y-25, floorPos_y-25, floorPos_y-25, floorPos_y-25];
-	for (i in collectables_x)
-	{
-		collectables.push(
-			collectable = {x_pos: collectables_x[i], y_pos: collectables_y[i], size: 30, line_points_y: [collectables_y[i]-10,collectables_y[i]+10], isFound: false}
-		)
-	}
-}
-
-function initMountains()
-{
-    var mountains_x = [140, 680, 1200,-900]; //anchor x coords of mountains
-
-	for (i in mountains_x)
-	{
-		var x = mountains_x[i];
-		var mountains_size = 250;
-		mountains.push
-		(
-			{
-				bigMount: {pos_x1: x, pos_y1: floorPos_y, pos_x2: x+285, pos_y2: floorPos_y,pos_x3: (x*2+285)/2, pos_y3: floorPos_y-mountains_size*1.55},
-				smallMount: {pos_x1: x+140, pos_y1: floorPos_y, pos_x2: x+350, pos_y2: floorPos_y,pos_x3: (x*2+140+350)/2, pos_y3: floorPos_y-mountains_size},
-				snowPeak: {pos_x1:  x+92, pos_y1: floorPos_y-mountains_size, pos_x2: x+92+101, pos_y2: floorPos_y-mountains_size,pos_x3: ((x+92)*2+101)/2, pos_y3: floorPos_y-mountains_size*1.55}
-			}
-		);
-	}
-}
-
-function initBonfire()
-{
-
-}
-
 // ---------------------------
 // Background render functions
 // ---------------------------
@@ -452,16 +387,6 @@ function checkPlayerDie()
 	}
 }
 
-function drawGameScore()
-{
-	textSize(24);
-	textAlign(LEFT);
-	textStyle(NORMAL);
-	fill(255);
-	noStroke();
-	text('Score: ' + game_score, 20, 30);
-}
-
 function createPlatform(x, y, length)
 {
     var p =
@@ -497,37 +422,4 @@ function drawPlatforms()
         var platform = platforms[i];
         platform.draw();
     }
-}
-
-function drawGameOver()
-{
-	push();
-	stroke(255);
-	textSize(72);
-	textAlign(CENTER); //center align text
-	textStyle(BOLD); //make text even more visible by boldening
-	fill(160,33,61);
-	if(fadeInBlackAlpha<80) fadeInBlackAlpha++;
-	if(fadeInRedAlpha<255) fadeInRedAlpha++;
-	noStroke();
-	fill(0,0,0,fadeInBlackAlpha);
-	rect(0,0,width,height);
-
-	fill(255,0,0,fadeInRedAlpha);
-	if (lives==0)
-	{
-		text('Game over.',width/2,height/2);
-		textSize(24);
-		text('Press Space to restart level.',width/2,height/2+60);
-		pop();
-		return;
-	}
-	if (flagpole.isReached==true)
-	{
-		text("Level complete!",width/2,height/2);
-		textSize(24);
-		text('Press space to continue.',width/2,height/2+60);
-		pop();
-		return;
-	}
 }

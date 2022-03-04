@@ -1,3 +1,112 @@
+////INITIALISATION OF BACKGROUND OBJECTS
+function initStars()
+{
+	for(var i=0;i<30;i++)
+	{
+		stars.push(
+			{
+				x_pos: random(i,width),
+				y_pos: random(0,height/3)
+			}
+		)
+	}
+}
+
+function initTrees()
+{
+    var trees_x = [-200,-500,-340,-100,50,240,400,640,810,940,1030,1200,1500,1760]; //anchor for x-coord of trees
+	var trunk = 
+	{		
+		w: 20, //width
+		h: 45 //height
+	};
+	var trees_y = floorPos_y-trunk.h;
+
+	for (i in trees_x)
+	{
+		trees.push
+		(
+			{
+				x: trees_x[i], y: trees_y, trunk: trunk
+			}
+		);
+	}
+}
+
+function initCanyons()
+{
+    var canyons_x = [900]; //anchor x coords of canyons
+	for (i in canyons_x) {
+		canyons.push({x_pos: canyons_x[i],width: 70})
+	}
+}
+
+function initCollectables()
+{
+	//some standard values for y-pos of collectables
+	onFloorY = floorPos_y-25; //collectables on the floor
+	abovePlatform = 100; //jump while on platform to get
+    var collectables_x =
+	[
+		400,500,600,875,875
+	];
+	var collectables_y =
+	[
+		onFloorY, onFloorY, onFloorY, floorPos_y-100, floorPos_y-100-abovePlatform
+	];
+	for (i in collectables_x)
+	{
+		collectables.push(
+			collectable = {x_pos: collectables_x[i], y_pos: collectables_y[i], size: 30, line_points_y: [collectables_y[i]-10,collectables_y[i]+10], isFound: false}
+		)
+	}
+}
+
+function initPlatforms()
+{
+	var platforms_x =
+	[
+		800,990,1180
+	]
+	var platforms_y =
+	[
+		floorPos_y-80, floorPos_y-135, floorPos_y-80
+	]
+	var platforms_w =
+	[
+		150,150,150
+	]
+	for(i in platforms_x)
+	{
+		platforms.push(createPlatform(platforms_x[i],platforms_y[i],150))
+	}
+}
+
+function initMountains()
+{
+    var mountains_x = [140, 680, 1200,-900]; //anchor x coords of mountains
+
+	for (i in mountains_x)
+	{
+		var x = mountains_x[i];
+		var mountains_size = 250;
+		mountains.push
+		(
+			{
+				bigMount: {pos_x1: x, pos_y1: floorPos_y, pos_x2: x+285, pos_y2: floorPos_y,pos_x3: (x*2+285)/2, pos_y3: floorPos_y-mountains_size*1.55},
+				smallMount: {pos_x1: x+140, pos_y1: floorPos_y, pos_x2: x+350, pos_y2: floorPos_y,pos_x3: (x*2+140+350)/2, pos_y3: floorPos_y-mountains_size},
+				snowPeak: {pos_x1:  x+92, pos_y1: floorPos_y-mountains_size, pos_x2: x+92+101, pos_y2: floorPos_y-mountains_size,pos_x3: ((x+92)*2+101)/2, pos_y3: floorPos_y-mountains_size*1.55}
+			}
+		);
+	}
+}
+
+function initBonfire()
+{
+
+}
+
+
 // Function to draw mountains objects.
 function drawMountains() {
 	for (i in mountains)
@@ -111,39 +220,50 @@ function drawCollectable(t_collectable) {
 	}
 }
 
-function drawLifeTokens() //draw life tokens
+
+
+class directionalSign
 {
-	for (var i=0;i<3;i++)
+	constructor()
 	{
-		var pt1L = {x: width-50*(i+0.5), y: 10};
-		var pt2L = {x: width-50*(i+0.3), y: 20};
-		var pt3 = {x: width-50*(i+0.7), y: 20};
-		var pt4 = {x: width-50*(i+0.7), y: 45};
-		var pt1R = {x: width-50*(i+0.9), y: 10};
-		var pt2R = {x: width-50*(i+1.1), y: 20};
-
-		noStroke();
-		//white outline
-		fill(255);
-		quad(pt1L.x,pt1L.y-3,pt2L.x+3,pt2L.y,pt4.x,pt4.y+3,pt3.x,pt3.y-3);
-		quad(pt1R.x,pt1R.y-3,pt2R.x-3,pt2R.y,pt4.x,pt4.y+4,pt3.x,pt3.y-3);
-		if(i+1<=lives){
-			fill(160,33,61); //red heart
-		}
-		else
+		this.r = {pos: createVector(170,floorPos_y-47)} //rectangle coords
+		this.t = //triangle coords
 		{
-			fill(0); //black heart
+			pos1: createVector(220,floorPos_y-57),
+			pos2: createVector(220,floorPos_y-27),
+			pos3: createVector(240,floorPos_y-42)
 		}
-		quad(pt1L.x,pt1L.y,pt2L.x,pt2L.y,pt4.x,pt4.y,pt3.x,pt3.y);
-		quad(pt1R.x,pt1R.y,pt2R.x,pt2R.y,pt4.x,pt4.y,pt3.x,pt3.y);
-	}
-}
 
-function drawDirectionalSign()
-{
-	fill(160,33,61);
-	rect(170,floorPos_y-47,20,5); //form an arrow shape
-	triangle(190,floorPos_y-51,190,floorPos_y-37,200,floorPos_y-44);
+		var movingRight = true;
+
+		this.drawSign = function()
+		{
+			fill(160,33,61);
+			rect(this.r.pos.x,this.r.pos.y,50,10); //form an arrow shape
+			triangle(this.t.pos1.x,this.t.pos1.y,this.t.pos2.x,this.t.pos2.y,this.t.pos3.x,this.t.pos3.y);
+		}
+
+		this.animateSign = function() //arrow hovers left and right
+		{
+			this.drawSign();
+			if (movingRight)
+			{
+				this.r.pos.x++;
+				this.t.pos1.x++;
+				this.t.pos2.x++;
+				this.t.pos3.x++;
+			}
+			else
+			{
+				this.r.pos.x--;
+				this.t.pos1.x--;
+				this.t.pos2.x--;
+				this.t.pos3.x--;
+			}
+
+			if(this.r.pos.x==180 || this.r.pos.x==140) movingRight=!movingRight;
+		}
+	}
 }
 
 function drawBonfire()

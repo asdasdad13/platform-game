@@ -8,7 +8,7 @@ function drawMountains() {
 		else fill(49,44,66);			//nighttime colours
 		triangle(m.bigMount.pos_x1,m.bigMount.pos_y1,m.bigMount.pos_x2,m.bigMount.pos_y2,m.bigMount.pos_x3,m.bigMount.pos_y3);
 		if(!cheatMode) fill(43,40,35); //daytime colours
-		else fill(44,37,57);
+		else fill(44,37,57);			//nighttime colours
 		triangle(m.smallMount.pos_x1,m.smallMount.pos_y1,m.smallMount.pos_x2,m.smallMount.pos_y2,m.smallMount.pos_x3,m.smallMount.pos_y3);
 		if(!cheatMode) fill(190,197,201);
 		else fill(104,102,126);
@@ -24,10 +24,10 @@ function drawTrees() {
 
 		if(!cheatMode) fill(95,74,47); //daytime colours
 		else fill(65,51,62);
-		rect(t.x,t.y,t.trunk.w,t.trunk.h);
+		rect(t.x,t.y,t.trunk.w,t.trunk.h); //nighttime colours
 		//leaves
-		if(!cheatMode) fill(54,86,62); //nighttime colurs
-		else fill(48,56,69);
+		if(!cheatMode) fill(54,86,62); //daytime colurs
+		else fill(48,56,69);			//nighttime colours
 		triangle(t.x-t.trunk.w,t.y,t.x+t.trunk.w*2,t.y,t.x+0.5*t.trunk.w,t.y-t.trunk.h);
 		triangle(t.x-t.trunk.w*0.7,t.y-t.trunk.h*0.7,t.x+t.trunk.w*1.7,t.y-+t.trunk.h*0.7,t.x+0.5*t.trunk.w,t.y-t.trunk.h*1.5);
 	}
@@ -128,13 +128,26 @@ function drawLifeTokens() //draw life tokens
 		quad(pt1L.x,pt1L.y-3,pt2L.x+3,pt2L.y,pt4.x,pt4.y+3,pt3.x,pt3.y-3);
 		quad(pt1R.x,pt1R.y-3,pt2R.x-3,pt2R.y,pt4.x,pt4.y+4,pt3.x,pt3.y-3);
 		if(i+1<=lives){
-			fill(160,33,61); //red fill
+			fill(160,33,61); //red heart
 		}
 		else
 		{
-			fill(0); //black fill
+			fill(0); //black heart
 		}
 		quad(pt1L.x,pt1L.y,pt2L.x,pt2L.y,pt4.x,pt4.y,pt3.x,pt3.y);
 		quad(pt1R.x,pt1R.y,pt2R.x,pt2R.y,pt4.x,pt4.y,pt3.x,pt3.y);
 	}
+}
+
+function drawDirectionalSign()
+{
+	fill(160,33,61);
+	rect(170,floorPos_y-47,20,5); //form an arrow shape
+	triangle(190,floorPos_y-51,190,floorPos_y-37,200,floorPos_y-44);
+}
+
+function drawBonfire()
+{
+	fill(95,74,47);
+	rect(140,floorPos_y-30,30,5);
 }

@@ -9,11 +9,9 @@ Extensions:
 	- added some vanity effects such as game over screen fading to black
 Bits I found difficult:
  - I spent a lot of time re-writing the logic for changes to the value of scrollPos in order to make the side-scrolling pause whenever the character reaches the edge of the level area. I tried adding more conditions, but the final solution was simply to switch the case conditions.
+	-- For example, the initial conditions only checked if the character was on the left or right side of the screen, and attempting to add on conditions to check if character had reached certain part of map made character unable to virtually move past a certain x-coordinate.
  - can't play birdSound no matter how short i cut it
- For example, the initial conditions only checked if the character was on the left or right side of the screen, and attempting to add on conditions to check if character had reached certain part of map made character stop moving at the wrong threshold.
-
-			fill(44,35,73,150);
-			use csp colour picker, then manually add if-else cases for nighttime colours.
+ - could not work out a shorter way to implement a nighttime overlay such that all background objects except the moon would be darkened, while keeping the moon virtually positioned behind the mountain objects.
 
 
 
@@ -37,6 +35,7 @@ var collectables;
 var mountains;
 var floorPos_y;
 var stars;
+var fire;
 
 var game_score;
 var flagpole;
@@ -46,10 +45,10 @@ var cheatMode;
 var fadeInBlackAlpha;
 var fadeInRedAlpha;
 
-// var jumpSound;
-// var collectableSound;
-// var deathSound;
-// var flagSound;
+var jumpSound;
+var collectableSound;
+var deathSound;
+var flagSound;
 var birdSound;
 
 var platforms;
@@ -78,81 +77,6 @@ function setup()
 	startGame();
 }
 
-function initStars()
-{
-	for(var i=0;i<30;i++)
-	{
-		stars.push(
-			{
-				x_pos: random(i,width),
-				y_pos: random(0,height/3)
-			}
-		)
-	}
-}
-
-function initTrees()
-{
-    var trees_x = [-200,-500,-340,-100,50,240,400,640,810,940,1030,1200,1500,1760]; //anchor for x-coord of trees
-	var trunk = 
-	{		
-		w: 20, //width
-		h: 45 //height
-	};
-	var trees_y = floorPos_y-trunk.h;
-
-	for (i in trees_x)
-	{
-		trees.push
-		(
-			{
-				x: trees_x[i], y: trees_y, trunk: trunk
-			}
-		);
-	}
-}
-
-function initCanyons()
-{
-    var canyons_x = [300, 700, 850, -330, -450, -100, 1500]; //anchor x coords of canyons
-	for (i in canyons_x) {
-		canyons.push({x_pos: canyons_x[i],width: 70})
-	}
-}
-
-
-function initCollectables()
-{
-	collectables = [];
-    var collectables_x = [210, 745, 820, -550, 1100, 1600]; //anchor x coords of collectables
-	var collectables_y = [floorPos_y-25, floorPos_y-90, floorPos_y-25, floorPos_y-25, floorPos_y-25, floorPos_y-25];
-	for (i in collectables_x)
-	{
-		collectables.push(
-			collectable = {x_pos: collectables_x[i], y_pos: collectables_y[i], size: 30, line_points_y: [collectables_y[i]-10,collectables_y[i]+10], isFound: false}
-		)
-	}
-}
-
-function initMountains()
-{
-    var mountains_x = [140, 680, 1200,-900]; //anchor x coords of mountains
-
-	for (i in mountains_x)
-	{
-		var x = mountains_x[i];
-		var mountains_size = 250;
-		mountains.push
-		(
-			{
-				bigMount: {pos_x1: x, pos_y1: floorPos_y, pos_x2: x+285, pos_y2: floorPos_y,pos_x3: (x*2+285)/2, pos_y3: floorPos_y-mountains_size*1.55},
-				smallMount: {pos_x1: x+140, pos_y1: floorPos_y, pos_x2: x+350, pos_y2: floorPos_y,pos_x3: (x*2+140+350)/2, pos_y3: floorPos_y-mountains_size},
-				snowPeak: {pos_x1:  x+92, pos_y1: floorPos_y-mountains_size, pos_x2: x+92+101, pos_y2: floorPos_y-mountains_size,pos_x3: ((x+92)*2+101)/2, pos_y3: floorPos_y-mountains_size*1.55}
-			}
-		);
-	}
-}
-
 function startGame()
 {
 	gameOver = false;
@@ -171,6 +95,7 @@ function startGame()
     initClouds();
     initCanyons();
     initMountains();
+	initBonfire();
 
 	//init the game
 	gameChar_x = 120;
@@ -241,6 +166,7 @@ function draw()
 		}
 	}
 
+	drawDirectionalSign();
 	drawFlagpole();
 
 	pop();
@@ -399,6 +325,88 @@ function drawGameChar()
     {
         drawStandingFrontFacing();
     }
+}
+
+
+
+function initStars()
+{
+	for(var i=0;i<30;i++)
+	{
+		stars.push(
+			{
+				x_pos: random(i,width),
+				y_pos: random(0,height/3)
+			}
+		)
+	}
+}
+
+function initTrees()
+{
+    var trees_x = [-200,-500,-340,-100,50,240,400,640,810,940,1030,1200,1500,1760]; //anchor for x-coord of trees
+	var trunk = 
+	{		
+		w: 20, //width
+		h: 45 //height
+	};
+	var trees_y = floorPos_y-trunk.h;
+
+	for (i in trees_x)
+	{
+		trees.push
+		(
+			{
+				x: trees_x[i], y: trees_y, trunk: trunk
+			}
+		);
+	}
+}
+
+function initCanyons()
+{
+    var canyons_x = [300, 700, 850, -330, -450, -100, 1500]; //anchor x coords of canyons
+	for (i in canyons_x) {
+		canyons.push({x_pos: canyons_x[i],width: 70})
+	}
+}
+
+
+function initCollectables()
+{
+	collectables = [];
+    var collectables_x = [210, 745, 820, -550, 1100, 1600]; //anchor x coords of collectables
+	var collectables_y = [floorPos_y-25, floorPos_y-90, floorPos_y-25, floorPos_y-25, floorPos_y-25, floorPos_y-25];
+	for (i in collectables_x)
+	{
+		collectables.push(
+			collectable = {x_pos: collectables_x[i], y_pos: collectables_y[i], size: 30, line_points_y: [collectables_y[i]-10,collectables_y[i]+10], isFound: false}
+		)
+	}
+}
+
+function initMountains()
+{
+    var mountains_x = [140, 680, 1200,-900]; //anchor x coords of mountains
+
+	for (i in mountains_x)
+	{
+		var x = mountains_x[i];
+		var mountains_size = 250;
+		mountains.push
+		(
+			{
+				bigMount: {pos_x1: x, pos_y1: floorPos_y, pos_x2: x+285, pos_y2: floorPos_y,pos_x3: (x*2+285)/2, pos_y3: floorPos_y-mountains_size*1.55},
+				smallMount: {pos_x1: x+140, pos_y1: floorPos_y, pos_x2: x+350, pos_y2: floorPos_y,pos_x3: (x*2+140+350)/2, pos_y3: floorPos_y-mountains_size},
+				snowPeak: {pos_x1:  x+92, pos_y1: floorPos_y-mountains_size, pos_x2: x+92+101, pos_y2: floorPos_y-mountains_size,pos_x3: ((x+92)*2+101)/2, pos_y3: floorPos_y-mountains_size*1.55}
+			}
+		);
+	}
+}
+
+function initBonfire()
+{
+
 }
 
 // ---------------------------

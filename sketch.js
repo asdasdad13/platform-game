@@ -12,7 +12,7 @@ Bits I found difficult:
 	-- For example, the initial conditions only checked if the character was on the left or right side of the screen, and attempting to add on conditions to check if character had reached certain part of map made character unable to virtually move past a certain x-coordinate.
  - can't play birdSound no matter how short i cut it
  - could not work out a shorter way to implement a nighttime overlay such that all background objects except the moon would be darkened, while keeping the moon virtually positioned behind the mountain objects.
-
+ - I had overcomplicated setting the conditions for textboxes to fade out. The intended effect was to have textboxes fade in and out when they came into/out of view, but I had incorporated scrollPos and e.g. width*0.04 into the condition, when the simplest condition was simply to check if the x position of the textboxes were greater than 0 (the x-pos of the left edge of the screen.)
 
 
  */
@@ -107,8 +107,7 @@ function startGame()
 	walkInstructionsBox = new fadingTextBox('walk', 80,floorPos_y-190,220,60);
 	collectInstructionsBox = new fadingTextBox('collect',360,floorPos_y-130,300,60);
 	jumpInstructionsBox = new fadingTextBox('jump', 600,floorPos_y-290,220,60);
-	testBox = new fadingTextBox('jump', width+200,floorPos_y-290,220,60);
-	textboxes.push(walkInstructionsBox,collectInstructionsBox,jumpInstructionsBox,testBox)
+	textboxes.push(walkInstructionsBox,collectInstructionsBox,jumpInstructionsBox)
 
 
 	//init the game
@@ -177,12 +176,9 @@ function draw()
 	drawFlagpole();
 	
 	//on-screen tutorial instructions, IN ORDER//
-
 	for(i in textboxes)//if box position is within current view, render, if not, fade invisible
-        
 	{
-		var b = textboxes[i];
-		b.render()
+		textboxes[i].render();
 	}
 
 	pop();

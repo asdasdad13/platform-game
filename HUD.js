@@ -79,7 +79,6 @@ class fadingTextBox
         this.textAlpha = 0;
         this.width = w;
         this.height = h;
-        this.visible = false;
         
         switch (action)
         {
@@ -95,30 +94,30 @@ class fadingTextBox
                 this.textStr = "Use Up Arrow key or Space\nto jump."
                 break;
         }
+	}
 
-        this.fadeOut = function()
-        {
-            if(this.boxAlpha!=0)
-            {
-                this.boxAlpha--;
-                this.textAlpha-=5;
-            }
-        }
+	fadeOut()
+	{
+		if(this.boxAlpha!=0) //fade out
+		{
+			this.boxAlpha--;
+			this.textAlpha-=5;
+		}
+	}
 
-        this.render = function()
-        {
-			if(this.boxPos.x+scrollPos*0.04<this.boxPos.x) this.fadeOut();
-            else if(this.boxAlpha!=100)
-            {
-                this.boxAlpha++;
-                this.textAlpha+=5;
-            }
+	render()
+	{
+		if(this.boxPos.x+scrollPos<0) this.fadeOut();
+		else if(this.boxAlpha!=100) //fade in
+		{
+			this.boxAlpha++;
+			this.textAlpha+=5;
+		}
 
-            fill(0,0,0,this.boxAlpha);
-            rect(this.boxPos.x,this.boxPos.y,this.width,this.height,10);
-            fill(255,255,255,this.textAlpha);
-            textSize(16);
-            text(this.textStr, this.textPos.x,this.textPos.y);
-        }
-    }
+		fill(0,0,0,this.boxAlpha);
+		rect(this.boxPos.x,this.boxPos.y,this.width,this.height,10);
+		fill(255,255,255,this.textAlpha);
+		textSize(16);
+		text(this.textStr, this.textPos.x,this.textPos.y);
+	}
 }

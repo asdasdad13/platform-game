@@ -35,7 +35,7 @@ function initTrees()
 
 function initCanyons()
 {
-    var canyons_x = [900]; //anchor x coords of canyons
+    var canyons_x = [835,1025,1205,1790,2000,2150]; //anchor x coords of canyons
 	for (i in canyons_x) {
 		canyons.push({x_pos: canyons_x[i],width: 70})
 	}
@@ -45,19 +45,32 @@ function initCollectables()
 {
 	//some standard values for y-pos of collectables
 	onFloorY = floorPos_y-25; //collectables on the floor
+	adjacentToCanyonX = 65 //collectable beside a canyon is followed by another above the canyon
 	abovePlatform = 100; //jump while on platform to get
     var collectables_x =
 	[
-		400,500,600,875,875
+		400,500,600,875,875,1065,1065,1260,1260,1260,1760,1760+adjacentToCanyonX,1980,1980+adjacentToCanyonX,2130,2130+adjacentToCanyonX,2300
 	];
 	var collectables_y =
 	[
-		onFloorY, onFloorY, onFloorY, floorPos_y-100, floorPos_y-100-abovePlatform
+		onFloorY, onFloorY, onFloorY, floorPos_y-100, floorPos_y-100-abovePlatform, floorPos_y-155,floorPos_y-155-abovePlatform,floorPos_y-100, floorPos_y-150,floorPos_y-100-abovePlatform,onFloorY, floorPos_y-abovePlatform,onFloorY,floorPos_y-abovePlatform,onFloorY,floorPos_y-abovePlatform,floorPos_y-220
 	];
+	var collectables_type =
+	[
+		'coin', 'coin', 'coin', 'coin', 'coin', 'coin', 'coin', 'coin', 'coin', 'coin', 'coin', 'coin', 'coin', 'coin', 'coin', 'coin', 'heart'
+	]
 	for (i in collectables_x)
 	{
 		collectables.push(
-			collectable = {x_pos: collectables_x[i], y_pos: collectables_y[i], size: 30, line_points_y: [collectables_y[i]-10,collectables_y[i]+10], isFound: false}
+			collectable =
+			{
+				c_type: collectables_type[i],
+				x_pos: collectables_x[i],
+				y_pos: collectables_y[i],
+				size: 30,
+				line_points_y: [collectables_y[i]-10,collectables_y[i]+10],
+				isFound: false
+			}
 		)
 	}
 }
@@ -66,11 +79,11 @@ function initPlatforms()
 {
 	var platforms_x =
 	[
-		800,990,1180
+		800,990,1180,2300,2490,2300
 	]
 	var platforms_y =
 	[
-		floorPos_y-80, floorPos_y-135, floorPos_y-80
+		floorPos_y-70, floorPos_y-125, floorPos_y-70,floorPos_y-70,floorPos_y-125,floorPos_y-180
 	]
 	var platforms_w =
 	[
@@ -209,18 +222,43 @@ function drawFlagpole() {
 }
 
 function drawCollectable(t_collectable) {
-	if (t_collectable.isFound == false) {
-		fill(211,166,99);
-		ellipse(t_collectable.x_pos,t_collectable.y_pos,t_collectable.size);
-		//star pattern on coin
-		stroke(177,135,73);
-		strokeWeight(2);
-		line(t_collectable.x_pos,t_collectable.line_points_y[0],t_collectable.x_pos,t_collectable.line_points_y[1]);
-		noStroke();
+	if (t_collectable.isFound == false)
+	{
+		if(t_collectable.c_type=='heart') drawHeart(t_collectable.x_pos,t_collectable.y_pos) //draw heart
+		else //draw coin
+		{
+			fill(211,166,99);
+			ellipse(t_collectable.x_pos,t_collectable.y_pos,t_collectable.size);
+			//star pattern on coin
+			stroke(177,135,73);
+			strokeWeight(2);
+			line(t_collectable.x_pos,t_collectable.line_points_y[0],t_collectable.x_pos,t_collectable.line_points_y[1]);
+			noStroke();
+		}
 	}
 }
 
+function drawHeart(x,y)
+	{
+		var w = 7; //standard width of half of heart
+		var pt1L = {x: x-w, y: y-w};
+		var pt2L = {x: x-2*w, y: y};
+		var pt3 = {x: x, y: y+2.5*w};
+		var pt4 = {x: x, y: y};
+		var pt1R = {x: x+w, y: y-w};
+		var pt2R = {x: x+2*w, y: y};
 
+		noStroke();
+		//white outline
+		fill(255);
+		line(pt1L.x,pt1L.y,pt2L.x,pt2L.y)
+		quad(pt1L.x,pt1L.y-2,pt2L.x-2,pt2L.y,pt3.x,pt3.y+2,pt4.x,pt4.y-2);
+		quad(pt1R.x,pt1R.y-2,pt2R.x+2,pt2R.y,pt3.x,pt3.y+2,pt4.x,pt4.y-2);
+		//red fill
+		fill(160,33,61);
+		quad(pt1L.x,pt1L.y,pt2L.x,pt2L.y,pt3.x,pt3.y,pt4.x,pt4.y);
+		quad(pt1R.x,pt1R.y,pt2R.x,pt2R.y,pt3.x,pt3.y,pt4.x,pt4.y);
+	}
 
 class directionalSign
 {

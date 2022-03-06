@@ -43,20 +43,22 @@ function drawGameOver()
 
 function drawLifeTokens() //draw life tokens
 {
-	for (var i=0;i<3;i++)
+	var y = 20 //middle of heart
+	var w = 10 //standard width of half of heart
+	for (var i=0;i<maxLives;i++)
 	{
-		var pt1L = {x: width-50*(i+0.5), y: 10};
-		var pt2L = {x: width-50*(i+0.3), y: 20};
-		var pt3 = {x: width-50*(i+0.7), y: 20};
-		var pt4 = {x: width-50*(i+0.7), y: 45};
-		var pt1R = {x: width-50*(i+0.9), y: 10};
-		var pt2R = {x: width-50*(i+1.1), y: 20};
-
+		var x = width-i*50-30;
+		var pt1L = {x: x-w, y: y-w};
+		var pt2L = {x: x-2*w, y: y};
+		var pt3 = {x: x, y: y+2.5*w};
+		var pt4 = {x: x, y: y};
+		var pt1R = {x: x+w, y: y-w};
+		var pt2R = {x: x+2*w, y: y};
 		noStroke();
 		//white outline
 		fill(255);
-		quad(pt1L.x,pt1L.y-3,pt2L.x+3,pt2L.y,pt4.x,pt4.y+3,pt3.x,pt3.y-3);
-		quad(pt1R.x,pt1R.y-3,pt2R.x-3,pt2R.y,pt4.x,pt4.y+4,pt3.x,pt3.y-3);
+		quad(pt1L.x,pt1L.y-3,pt2L.x-3,pt2L.y,pt3.x,pt3.y+3,pt4.x,pt4.y-3);
+		quad(pt1R.x,pt1R.y-3,pt2R.x+3,pt2R.y,pt3.x,pt3.y+3,pt4.x,pt4.y-3);
 		if(i+1<=lives){
 			fill(160,33,61); //red heart
 		}
@@ -64,8 +66,8 @@ function drawLifeTokens() //draw life tokens
 		{
 			fill(0); //black heart
 		}
-		quad(pt1L.x,pt1L.y,pt2L.x,pt2L.y,pt4.x,pt4.y,pt3.x,pt3.y);
-		quad(pt1R.x,pt1R.y,pt2R.x,pt2R.y,pt4.x,pt4.y,pt3.x,pt3.y);
+		quad(pt1L.x,pt1L.y,pt2L.x,pt2L.y,pt3.x,pt3.y,pt4.x,pt4.y);
+		quad(pt1R.x,pt1R.y,pt2R.x,pt2R.y,pt3.x,pt3.y,pt4.x,pt4.y);
 	}
 }
 
@@ -89,10 +91,15 @@ class fadingTextBox
             case 'collect':
                 this.textStr = 'Walk over coins to pick them up.\nCoins collected will add to your score.'
                 break;
-
             case 'jump':
                 this.textStr = "Use Up Arrow key or Space\nto jump."
                 break;
+			case 'canyon':
+				this.textStr = "Be careful not to fall into canyons! You will lose a heart\nevery time you fall into one. You may restart the current\nstage if you still have hearts remaining, but when the\nnumber of hearts reaches 0, you will fail the entire level. \n\nJump over the canyon to proceed."
+				break;
+			case 'heart':
+				this.textStr = 'Pick up hearts to gain lives.\nYou can pick them up only\nwhen your health isn\'t full.'
+				break;
         }
 	}
 
@@ -105,9 +112,10 @@ class fadingTextBox
 		}
 	}
 
-	render()
+	render() //if box position is within current view, render, if not, fade invisible
 	{
-		if(this.boxPos.x+scrollPos<0) this.fadeOut();
+		if(this.boxPos.x+scrollPos>width) return; //don't render if out of view
+		if(this.boxPos.x+scrollPos<0.05*width) this.fadeOut(); //fade out if box is beyond left edge of screen
 		else if(this.boxAlpha!=100) //fade in
 		{
 			this.boxAlpha++;

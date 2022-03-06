@@ -56,7 +56,7 @@ class Cloud
             this.mid.pos.x += this.speed;
             this.right.pos.x += this.speed;
 
-            if (this.mid.pos.x > width + 100) {
+            if (this.left.pos.x+this.left.w/2 > width + 100) {
                 var newX = random(-50, -70);
 
                 this.left.pos.x = newX - 30;

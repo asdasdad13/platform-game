@@ -7,13 +7,14 @@ Sound credits:
 
 Extensions:
 	- added some vanity effects such as game over screen fading to black, and coded a textbox that would fade in and out using object-oriented programming.
+	- intially, character would only pick up collectable if the 1 pixel at the bottom of its legs touches a collectable. I modified the code for checkCollectable such that the collectable can be found when in contact with more parts of the character's figure.
+	- made cloud objects and animated them to float across the screen
 Bits I found difficult:
  - I spent a lot of time re-writing the logic for changes to the value of scrollPos in order to make the side-scrolling pause whenever the character reaches the edge of the level area. I tried adding more conditions, but the final solution was simply to switch the case conditions.
 	-- For example, the initial conditions only checked if the character was on the left or right side of the screen, and attempting to add on conditions to check if character had reached certain part of map made character unable to virtually move past a certain x-coordinate.
  - can't play birdSound no matter how short i cut it
  - could not work out a shorter way to implement a nighttime overlay such that all background objects except the moon would be darkened, while keeping the moon virtually positioned behind the mountain objects.
- - I had overcomplicated setting the conditions for textboxes to fade out. The intended effect was to have textboxes fade in and out when they came into/out of view, but I had incorporated scrollPos and e.g. width*0.04 into the condition, when the simplest condition was simply to check if the x position of the textboxes were greater than 0 (the x-pos of the left edge of the screen.)
-
+ - I incorrectly determined the condition for the textboxes to fade out in a mathematical sense, and had maintained trying to edit random properties like changing the format of the class methods, creating dummy objects and adding more redundant property names.
 
  */
 
@@ -45,6 +46,7 @@ var cheatMode;
 var fadeInBlackAlpha;
 var fadeInRedAlpha;
 var textboxes;
+var maxLives;
 
 var jumpSound;
 var collectableSound;
@@ -74,7 +76,8 @@ function preload()
 function setup()
 {
 	createCanvas(1024, 576);
-	lives = 3;
+	lives = 2;
+	maxLives = 2;
 	startGame();
 }
 
@@ -93,6 +96,7 @@ function startGame()
 	collectables = [];
     platforms = [];
 	textboxes = [];
+	pickUpHearts = [];
 
 	initStars();
     initTrees();
@@ -106,8 +110,10 @@ function startGame()
 	d = new directionalSign;
 	walkInstructionsBox = new fadingTextBox('walk', 80,floorPos_y-190,220,60);
 	collectInstructionsBox = new fadingTextBox('collect',360,floorPos_y-130,300,60);
-	jumpInstructionsBox = new fadingTextBox('jump', 600,floorPos_y-290,220,60);
-	textboxes.push(walkInstructionsBox,collectInstructionsBox,jumpInstructionsBox)
+	jumpInstructionsBox = new fadingTextBox('jump', 600,floorPos_y-290,230,60);
+	canyonInstructionsBox = new fadingTextBox('canyon', 1500,floorPos_y-250,450,140);
+	heartInstructionsBox = new fadingTextBox('heart',2300,floorPos_y-330,220,80);
+	textboxes.push(walkInstructionsBox,collectInstructionsBox,jumpInstructionsBox,canyonInstructionsBox,heartInstructionsBox)
 
 
 	//init the game
@@ -117,7 +123,7 @@ function startGame()
 	// Variable to control the background scrolling.
 	scrollPos = 0;
 	game_score = 0;
-	flagpole = {isReached: false, x_pos: 1700};
+	flagpole = {isReached: false, x_pos: 3000};
 
 	// Variable to store the real position of the gameChar in the game
 	// world. Needed for collision detection.
@@ -165,6 +171,10 @@ function draw()
 		checkCanyon(canyons[i]);
 	}
 
+	
+	//on-screen tutorial instructions, IN ORDER//
+	for(i in textboxes) textboxes[i].render();
+
 	for (i in collectables) {
 		if (!collectables[i].isFound) {
 			drawCollectable(collectables[i]);
@@ -174,19 +184,11 @@ function draw()
 
 	d.animateSign();
 	drawFlagpole();
-	
-	//on-screen tutorial instructions, IN ORDER//
-	for(i in textboxes)//if box position is within current view, render, if not, fade invisible
-	{
-		textboxes[i].render();
-	}
-
 	pop();
 
 	drawLifeTokens();
 	drawGameChar();
 	drawGameScore();
-
 
 	textSize(16);
 	if (cheatMode) text('Cheat mode on',width-120,height-10);
@@ -207,25 +209,25 @@ function draw()
 		if (gameChar_x < width * 0.3 && gameChar_world_x+10>317) //if char has reached threshold, the scene moves instead
 		{
 			scrollPos += 5;
-			if(cheatMode) scrollPos += 5; //move in 2x speed for cheat mode
+			if(cheatMode) scrollPos += 20; //move in 2x speed for cheat mode
 		}
 		else if(gameChar_world_x>17) //if character has NOT reached left threshold, char updates
 		{
 			gameChar_x -= 5;
-			if(cheatMode) gameChar_x -= 5;
+			if(cheatMode) gameChar_x -= 20;
 		}
 	}
 	if(isRight)
 	{
-		if(gameChar_x > width * 0.7 && gameChar_world_x-10<1800)
+		if(gameChar_x > width * 0.7 && gameChar_world_x-10<2800)
 		{
 			scrollPos -= 5
-			if(cheatMode) scrollPos -= 5;
+			if(cheatMode) scrollPos -= 20;
 		}
-		else if(gameChar_world_x<2100)
+		else if(gameChar_world_x<3100)
 		{
 			gameChar_x += 5;
-			if(cheatMode) gameChar_x += 5;
+			if(cheatMode) gameChar_x += 20;
 		}
 	}
 
@@ -372,8 +374,13 @@ function checkCollectable(t_collectable)
 
 	if(c1 && c2)
 	{
+		if(t_collectable.c_type=='heart')
+		{
+			if(lives<maxLives) lives++; //gain 1 life, up to maxLives
+			else return;
+		}
+		else game_score++;
 		t_collectable.isFound = true;
-		game_score++;
 		collectableSound.play();
 	}
 }
